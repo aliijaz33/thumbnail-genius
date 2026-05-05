@@ -25,12 +25,12 @@
 
 .App.dark-mode::before {
   opacity: 0.25;
-  filter: invert(1) brightness(0.2) sepia(0.4) saturate(0.6) contrast(0.8);
+  filter: brightness(0.9) saturate(0.8) contrast(0.8);
 }
 
 .App.light-mode::before {
   opacity: 0.2;
-  filter: brightness(0.9) contrast(0.85) saturate(0.8);
+  filter: brightness(0.7) contrast(0.85) saturate(0.8);
 }
 
 @keyframes subtleFloat {

@@ -40,7 +40,13 @@ import {
   Image as ImageIcon,
 } from '@mui/icons-material';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { generateAIImage, isRealAIConfigured, AVAILABLE_MODELS } from './services/aiImageService';
+import {
+  generateAIImage,
+  isRealAIConfigured,
+  AI_SOURCES,
+  getSourceModels,
+  getDefaultModel,
+} from './services/aiImageService';
 import './App.css';
 
 function AppContent() {
@@ -55,7 +61,8 @@ function AppContent() {
     message: '',
     severity: 'info',
   });
-  const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[0].id);
+  const [selectedSource, setSelectedSource] = useState('replicate');
+  const [selectedModel, setSelectedModel] = useState(getDefaultModel('replicate'));
   const [uploadedImage, setUploadedImage] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editPrompt, setEditPrompt] = useState('');
@@ -82,7 +89,7 @@ function AppContent() {
     showSnackbar('Generating image...', 'info');
 
     try {
-      const result = await generateAIImage(prompt, selectedModel, uploadedImage);
+      const result = await generateAIImage(prompt, selectedModel, selectedSource);
       setGeneratedImage(result);
       showSnackbar('Image generated successfully!', 'success');
     } catch (error) {
@@ -136,7 +143,7 @@ function AppContent() {
 
     setIsGenerating(true);
     try {
-      const result = await generateAIImage(editPrompt, selectedModel, uploadedImage);
+      const result = await generateAIImage(editPrompt, selectedModel, selectedSource);
       setGeneratedImage(result);
       showSnackbar('Image updated successfully!', 'success');
     } catch (error) {
@@ -412,24 +419,37 @@ function AppContent() {
                   </Button>
                 </Box>
 
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                   <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap' }}>
+                    Source:
+                  </Typography>
+                  <Select
+                    value={selectedSource}
+                    onChange={(e) => {
+                      const newSource = e.target.value;
+                      setSelectedSource(newSource);
+                      setSelectedModel(getDefaultModel(newSource));
+                    }}
+                    size='small'
+                    sx={{ minWidth: 150, fontSize: 13, height: 32, '& .MuiSelect-select': { py: 0.5 } }}
+                  >
+                    {AI_SOURCES.map((source) => (
+                      <MenuItem key={source.id} value={source.id} sx={{ fontSize: 13 }}>
+                        {source.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+
+                  <Typography variant='caption' color='text.secondary' sx={{ whiteSpace: 'nowrap', ml: 1 }}>
                     Model:
                   </Typography>
                   <Select
                     value={selectedModel}
                     onChange={(e) => setSelectedModel(e.target.value)}
                     size='small'
-                    sx={{
-                      minWidth: 180,
-                      fontSize: 13,
-                      height: 32,
-                      '& .MuiSelect-select': {
-                        py: 0.5,
-                      },
-                    }}
+                    sx={{ minWidth: 160, fontSize: 13, height: 32, '& .MuiSelect-select': { py: 0.5 } }}
                   >
-                    {AVAILABLE_MODELS.map((model) => (
+                    {getSourceModels(selectedSource).map((model) => (
                       <MenuItem key={model.id} value={model.id} sx={{ fontSize: 13 }}>
                         {model.name}
                       </MenuItem>
